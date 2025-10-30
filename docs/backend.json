@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the RandoToulouse application.",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "etudiant": {
+          "type": "boolean",
+          "description": "Indicates whether the user is a student."
+        },
+        "genre": {
+          "type": "string",
+          "description": "User's gender.",
+          "enum": ["Femme", "Homme", "Autre"]
+        },
+        "identite": {
+          "type": "string",
+          "description": "User's identity description (username)."
+        },
+        "majeur": {
+          "type": "boolean",
+          "description": "Indicates whether the user is of legal age."
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "URL of the user's avatar.",
+          "format": "uri"
+        },
+        "recommandation": {
+          "type": "string",
+          "description": "User's recommendation."
+        },
+        "role": {
+          "type": "string",
+          "description": "User's role (e.g., Member, Administrator, Moderator).",
+          "enum": ["Membre", "Admin", "Modérateur"]
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+        }
+      },
+      "required": [
+        "email",
+        "genre",
+        "identite",
+        "majeur",
+        "role"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password"
+    ]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "Stores user profiles. The document ID is the user's UID from Firebase Authentication."
+    }
+  }
+}

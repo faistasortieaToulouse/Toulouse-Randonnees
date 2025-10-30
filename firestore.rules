@@ -1,0 +1,261 @@
+/**
+ * @file Firebase Security Rules for RandoToulouse.
+ *
+ * @corePhilosophy This ruleset enforces a strict user-ownership model for user profiles and their associated data,
+ *  while allowing public read access to certain collections like forum posts. Global admin and moderator roles
+ *  are managed via the existence of documents in dedicated role collections. Data denormalization is used to
+ *  avoid costly `get()` calls in security rules, ensuring efficient and secure access control.
+ *
+ * @dataStructure
+ * - `/users/{userId}`: Stores private user profile data, accessible only to the user themselves.
+ * - `/hike_events/{hikeEventId}`: Stores hike event details. Accessible to everyone, but restricted writes.
+ * - `/event_participants/{eventParticipantId}`: Stores event participation records.
+ * - `/ratings/{ratingId}`: Stores ratings for hike events.
+ * - `/forum_posts/{forumPostId}`: Stores publicly readable forum posts.
+ * - `/friendships/{friendshipId}`: Stores friendship relationships between users.
+ * - `/messages/{messageId}`: Stores messages between users.
+ * - `/roles_admin/{userId}`: Collection used to grant admin roles. Document existence grants the role.
+ * - `/roles_moderator/{userId}`: Collection used to grant moderator roles. Document existence grants the role.
+ *
+ * @keySecurityDecisions
+ * - User listing is disabled to protect user privacy.
+ * - Ownership is enforced using path-based matching (e.g., `/users/{userId}`) and validated through the `userId` field in documents.
+ * - Public read access is granted to the `/forum_posts` collection, assuming all data within is intended for public consumption.
+ * - Admin and moderator roles are managed by document existence in `/roles_admin/{userId}` and `/roles_moderator/{userId}` respectively.
+ * - Write rules use `if false;` to explicitly deny permission when not granted.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Enforces user-ownership for user profiles. Only the authenticated user can read, update, or delete their own profile.
+     * @path /users/{userId}
+     * @allow (create) - Authenticated user with UID 'user123' can create a profile at /users/user123.
+     * @allow (get, update, delete) - Authenticated user with UID 'user123' can access their profile at /users/user123.
+     * @deny (create) - Authenticated user with UID 'user456' cannot create a profile at /users/user123.
+     * @deny (get, update, delete) - Authenticated user with UID 'user456' cannot access the profile at /users/user123.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if request.auth.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Allows anyone to read hike event details, but restricts creation, updates, and deletion to the event creator.
+     * @path /hike_events/{hikeEventId}
+     * @allow (get, list) - Any user can read or list hike events.
+     * @allow (create) - Authenticated user with UID 'user123' can create a hike event with userId: 'user123'.
+     * @allow (update, delete) - Authenticated user with UID 'user123' can update/delete a hike event they created.
+     * @deny (create) - Authenticated user with UID 'user456' cannot create a hike event with userId: 'user123'.
+     * @deny (update, delete) - Authenticated user with UID 'user456' cannot update/delete a hike event created by 'user123'.
+     * @principle Public read access with owner-only writes.
+     */
+    match /hike_events/{hikeEventId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner() {
+        return request.auth != null && request.auth.uid == resource.data.userId;
+      }
+
+      function isCreatingWithOwnerId() {
+        return request.auth != null && request.auth.uid == request.resource.data.userId;
+      }
+
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner();
+      allow delete: if isSignedIn() && isOwner();
+    }
+
+    /**
+     * @description Manages event participant records. Allows creation if the user ID matches, and restricts read/write access to the user or event owner.
+     * @path /event_participants/{eventParticipantId}
+     * @allow (create) - Authenticated user can create a participant record for themselves.
+     * @allow (get, list) - Authenticated user can read participant records related to their user ID.
+     * @deny (create) - Authenticated user cannot create a participant record for another user.
+     * @deny (update, delete) - Only the user or event organizer can modify participant records.
+     * @principle Enforces document ownership and restricts modification to owners.
+     */
+    match /event_participants/{eventParticipantId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner() {
+        return request.auth != null && request.auth.uid == resource.data.userId;
+      }
+
+      function isEventOwner(eventId) {
+        return get(/databases/$(database)/documents/hike_events/$(eventId)).data.userId == request.auth.uid;
+      }
+
+      function isCreatingWithOwnerId() {
+        return request.auth != null && request.resource.data.userId == request.auth.uid;
+      }
+
+      allow get: if isSignedIn() && isOwner();
+      allow list: if isSignedIn() && isOwner();
+      allow create: if isSignedIn() && isCreatingWithOwnerId();
+      allow update: if isSignedIn() && (isOwner() || isEventOwner(resource.data.eventId));
+      allow delete: if isSignedIn() && (isOwner() || isEventOwner(resource.data.eventId));
+    }
+
+    /**
+     * @description Manages ratings for hike events. Allows any authenticated user to create, view or list ratings but only rating creator to update/delete ratings
+     * @path /ratings/{ratingId}
+     * @allow (create) - Authenticated user can create a rating.
+     * @allow (get, list) - Any authenticated user can read or list ratings.
+     * @deny (update, delete) - Only the user or event organizer can modify ratings records.
+     * @principle Authenticated user writes and only owner can update/delete ratings
+     */
+    match /ratings/{ratingId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner() {
+        return request.auth != null && request.auth.uid == resource.data.userId;
+      }
+
+      function isCreatingWithOwnerId() {
+        return request.auth != null && request.resource.data.userId == request.auth.uid;
+      }
+
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isCreatingWithOwnerId();
+      allow update: if isSignedIn() && isOwner();
+      allow delete: if isSignedIn() && isOwner();
+    }
+
+    /**
+     * @description Manages forum posts. Allows any authenticated user to create, view or list posts.
+     * @path /forum_posts/{forumPostId}
+     * @allow (create, get, list) - Any authenticated user can create, read or list forum posts.
+     * @deny (update, delete) - Only the user or event organizer can modify forum posts records.
+     * @principle Public Read/Write
+     */
+    match /forum_posts/{forumPostId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isCreatingWithOwnerId() {
+        return request.auth != null && request.resource.data.userId == request.auth.uid;
+      }
+
+      function isOwner() {
+        return request.auth != null && request.auth.uid == resource.data.userId;
+      }
+
+      allow get, list: if true;
+      allow create: if isSignedIn() && isCreatingWithOwnerId();
+      allow update: if isSignedIn() && isOwner();
+      allow delete: if isSignedIn() && isOwner();
+    }
+
+     /**
+      * @description Manages friendship requests. Allows creation only if sender id matches the user and receiver id matches one of the friendship ids. Only participating users can update or delete friendships.
+      * @path /friendships/{friendshipId}
+      * @allow (create) - Authenticated user can create friendship requests
+      * @allow (get, list) - Participating users can view and list friendship requests.
+      * @deny (update, delete) - Other users cannot update or delete friendship requests.
+      * @principle Private collection between users.
+      */
+     match /friendships/{friendshipId} {
+          function isSignedIn() {
+               return request.auth != null;
+          }
+
+          function isParticipant() {
+               return request.auth != null && (request.auth.uid == resource.data.user1Id || request.auth.uid == resource.data.user2Id);
+          }
+
+          function isCreatingWithCorrectIds() {
+               return request.auth != null && (request.auth.uid == request.resource.data.user1Id || request.auth.uid == request.resource.data.user2Id);
+          }
+
+          allow get: if isSignedIn() && isParticipant();
+          allow list: if isSignedIn() && isParticipant();
+          allow create: if isSignedIn() && isCreatingWithCorrectIds();
+          allow update: if isSignedIn() && isParticipant();
+          allow delete: if isSignedIn() && isParticipant();
+     }
+
+     /**
+      * @description Manages messages between users. Only the sender and receiver are authorized.
+      * @path /messages/{messageId}
+      *  @allow (create) - Only the sender can create the message.
+      *  @allow (get, list) - Both the sender and receiver can view the message.
+      *  @deny (update, delete) - No one can edit the message.
+      * @principle Private collection between two users.
+      */
+     match /messages/{messageId} {
+          function isSignedIn() {
+               return request.auth != null;
+          }
+
+          function isParticipant() {
+               return request.auth != null && (request.auth.uid == resource.data.senderId || request.auth.uid == resource.data.receiverId);
+          }
+
+          function isCreatingWithCorrectIds() {
+               return request.auth != null && request.auth.uid == request.resource.data.senderId;
+          }
+
+          allow get: if isSignedIn() && isParticipant();
+          allow list: if isSignedIn() && isParticipant();
+          allow create: if isSignedIn() && isCreatingWithCorrectIds();
+          allow update: if false;
+          allow delete: if false;
+     }
+
+     /**
+      * @description Manages admin roles. Document existence grants the role.
+      * @path /roles_admin/{userId}
+      * @allow (get) -  Any authenticated user can check for the role.
+      * @allow (create) - Only accessible from backend with custom authentication.
+      * @allow (update, delete) -  Only accessible from backend with custom authentication.
+      * @principle Role-based access control.
+      */
+     match /roles_admin/{userId} {
+          function isSignedIn() {
+               return request.auth != null;
+          }
+          allow get: if isSignedIn();
+          allow list: if false;
+          allow create: if false;
+          allow update: if false;
+          allow delete: if false;
+     }
+
+     /**
+      * @description Manages moderator roles. Document existence grants the role.
+      * @path /roles_moderator/{userId}
+      * @allow (get) -  Any authenticated user can check for the role.
+      * @allow (create) - Only accessible from backend with custom authentication.
+      * @allow (update, delete) -  Only accessible from backend with custom authentication.
+      * @principle Role-based access control.
+      */
+          match /roles_moderator/{userId} {
+          function isSignedIn() {
+               return request.auth != null;
+          }
+          allow get: if isSignedIn();
+          allow list: if false;
+          allow create: if false;
+          allow update: if false;
+          allow delete: if false;
+     }
+  }
+}

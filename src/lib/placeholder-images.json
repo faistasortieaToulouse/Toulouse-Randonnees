@@ -1,0 +1,76 @@
+{
+  "placeholderImages": [
+    {
+      "id": "landing-hero",
+      "description": "A beautiful hiking trail in the mountains at sunrise.",
+      "imageUrl": "https://picsum.photos/seed/randohero/1920/1080",
+      "imageHint": "hiking sunrise"
+    },
+    {
+      "id": "hike-1",
+      "description": "A serene forest path.",
+      "imageUrl": "https://picsum.photos/seed/hike1/600/400",
+      "imageHint": "forest path"
+    },
+    {
+      "id": "hike-2",
+      "description": "A mountain lake view.",
+      "imageUrl": "https://picsum.photos/seed/hike2/600/400",
+      "imageHint": "mountain lake"
+    },
+    {
+      "id": "hike-3",
+      "description": "A city park trail.",
+      "imageUrl": "https://picsum.photos/seed/hike3/600/400",
+      "imageHint": "city park"
+    },
+    {
+      "id": "hike-4",
+      "description": "Coastal hiking path.",
+      "imageUrl": "https://picsum.photos/seed/hike4/600/400",
+      "imageHint": "coastal path"
+    },
+    {
+      "id": "hike-5",
+      "description": "A desert trail with cacti.",
+      "imageUrl": "https://picsum.photos/seed/hike5/600/400",
+      "imageHint": "desert trail"
+    },
+    {
+      "id": "hike-6",
+      "description": "A snowy mountain landscape.",
+      "imageUrl": "https://picsum.photos/seed/hike6/600/400",
+      "imageHint": "snowy mountain"
+    },
+    {
+      "id": "map-placeholder",
+      "description": "A placeholder map view.",
+      "imageUrl": "https://picsum.photos/seed/map/800/600",
+      "imageHint": "map"
+    },
+    {
+      "id": "avatar-1",
+      "description": "User avatar 1",
+      "imageUrl": "https://picsum.photos/seed/avatar1/100/100",
+      "imageHint": "portrait person"
+    },
+    {
+      "id": "avatar-2",
+      "description": "User avatar 2",
+      "imageUrl": "https://picsum.photos/seed/avatar2/100/100",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar-3",
+      "description": "User avatar 3",
+      "imageUrl": "https://picsum.photos/seed/avatar3/100/100",
+      "imageHint": "woman smiling"
+    },
+    {
+      "id": "avatar-4",
+      "description": "User avatar 4",
+      "imageUrl": "https://picsum.photos/seed/avatar4/100/100",
+      "imageHint": "man outdoor"
+    }
+  ]
+}

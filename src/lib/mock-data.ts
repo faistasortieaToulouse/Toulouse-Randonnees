@@ -1,0 +1,157 @@
+import type { User } from '@/types';
+
+export const mockUsers: User[] = [
+  { 
+    id: '1', 
+    identite: 'AlexRando', 
+    email: 'alex@example.com', 
+    role: 'Admin', 
+    avatarUrl: 'https://picsum.photos/seed/avatar1/100/100', 
+    status: 'active',
+    prenom: 'Alex',
+    nom: 'Dupont',
+    description: 'Passionné de randonnée et de photographie. Toujours partant pour une nouvelle aventure !',
+    telephone: '0612345678',
+    genre: 'homme',
+    commune: 'Toulouse',
+    dateNaissance: '1990-05-15',
+    langues: 'Français, Anglais'
+  },
+  { 
+    id: '2', 
+    identite: 'SamAventure', 
+    email: 'sam@example.com', 
+    role: 'Modérateur', 
+    avatarUrl: 'https://picsum.photos/seed/avatar2/100/100', 
+    status: 'active',
+    prenom: 'Sam',
+    nom: 'Leroy',
+    description: '',
+    telephone: '',
+    genre: 'femme',
+    commune: 'Blagnac',
+    dateNaissance: '1988-11-20',
+    langues: 'Français, Espagnol'
+  },
+  { 
+    id: '3', 
+    identite: 'CharlieMarche', 
+    email: 'charlie@example.com', 
+    role: 'Membre', 
+    avatarUrl: 'https://picsum.photos/seed/avatar3/100/100', 
+    status: 'active',
+    prenom: 'Charlie',
+    nom: 'Petit',
+    description: 'A la recherche de balades tranquilles le week-end.',
+    telephone: '',
+    genre: 'autre',
+    commune: 'Colomiers',
+    dateNaissance: '1995-02-10',
+    langues: 'Français'
+  },
+  { 
+    id: '4', 
+    identite: 'MorganExplo', 
+    email: 'morgan@example.com', 
+    role: 'Membre', 
+    avatarUrl: 'https://picsum.photos/seed/avatar4/100/100', 
+    status: 'suspended',
+    prenom: 'Morgan',
+    nom: 'Garcia',
+    description: '',
+    telephone: '',
+    genre: 'homme',
+    commune: 'Muret',
+    dateNaissance: '2000-07-30',
+    langues: 'Français'
+  },
+];
+
+export const mockHikes = [
+    {
+        id: 'hike-001',
+        title: "Circuit des 25 ponts",
+        location: "Forêt de Bouconne",
+        distance: "12 km",
+        duration: "3h 30min",
+        difficulty: "Moyen",
+        type: "Open Topo Maps",
+        imageUrl: "https://picsum.photos/seed/hike1/600/400",
+        imageHint: "forest path",
+    },
+    {
+        id: 'hike-002',
+        title: "Le long du Canal du Midi",
+        location: "Toulouse Centre",
+        distance: "8 km",
+        duration: "2h",
+        difficulty: "Facile",
+        type: "Open Data Street",
+        imageUrl: "https://picsum.photos/seed/hike3/600/400",
+        imageHint: "city canal",
+    },
+    {
+        id: 'hike-003',
+        title: "Crêtes du Pic du Gar",
+        location: "Pyrénées",
+        distance: "15 km",
+        duration: "6h",
+        difficulty: "Difficile",
+        type: "Open Topo Maps",
+        imageUrl: "https://picsum.photos/seed/hike2/600/400",
+        imageHint: "mountain ridge",
+    },
+    {
+        id: 'hike-004',
+        title: "Boucle du lac de la Ramée",
+        location: "Tournefeuille",
+        distance: "5 km",
+        duration: "1h 15min",
+        difficulty: "Facile",
+        type: "Open Data Street",
+        imageUrl: "https://picsum.photos/seed/hike4/600/400",
+        imageHint: "lake park",
+    }
+];
+
+export const mockEvents = [
+    {
+        id: 'event-001',
+        title: "Sortie conviviale en Forêt de Bouconne",
+        hikeId: 'hike-001',
+        organizer: mockUsers[0],
+        date: "2025-10-12T09:00:00",
+        meetingPoint: "Parking du Pigeonnier, Forêt de Bouconne",
+        participants: [mockUsers[1], mockUsers[2]],
+        maxParticipants: 15,
+        status: "À venir",
+    },
+    {
+        id: 'event-002',
+        title: "Balade urbaine le long du Canal",
+        hikeId: 'hike-002',
+        organizer: mockUsers[2],
+        date: "2025-10-19T14:00:00",
+        meetingPoint: "Métro François Verdier",
+        participants: [mockUsers[0]],
+        maxParticipants: 20,
+        status: "À venir",
+    },
+    {
+        id: 'event-003',
+        title: "Rando sportive dans les Pyrénées",
+        hikeId: 'hike-003',
+        organizer: mockUsers[1],
+        date: "2025-11-01T07:00:00",
+        meetingPoint: "Parking du col de Menté",
+        participants: [],
+        maxParticipants: 10,
+        status: "À venir",
+    }
+];
+
+export const mockForumTopics = [
+    { id: 't-1', title: "Quel est votre équipement indispensable ?", author: mockUsers[0], replies: 5, lastReply: "il y a 2 heures" },
+    { id: 't-2', title: "Idées de randonnées pour débutants autour de Toulouse", author: mockUsers[2], replies: 12, lastReply: "il y a 5 heures" },
+    { id: 't-3', title: "Covoiturage pour les sorties en montagne", author: mockUsers[1], replies: 8, lastReply: "hier" },
+]
